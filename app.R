@@ -39,11 +39,12 @@ ui <- dashboardPage(skin = "purple",
               ),
               fluidRow(
                 box(title = "Municipal income", width = 6,height = 350, status = "primary",
-                    plotlyOutput("plot1",height = 300)),
+                    plotlyOutput("plot1",height = 300)
+                ),
                 column(width = 6,
-                              valueBoxOutput("povertyBox", width = 12),
-                              valueBoxOutput("fpsBox", width = 12),
-                              valueBoxOutput("subsidyBox", width = 12)
+                       valueBoxOutput("povertyBox", width = 12),
+                       valueBoxOutput("fpsBox", width = 12),
+                       valueBoxOutput("subsidyBox", width = 12)
                        )
               )
       ),
@@ -57,6 +58,7 @@ ui <- dashboardPage(skin = "purple",
 
 server = function(input, output, session){
   output$map <- renderLeaflet({
+
     geoID <- as.vector(chl$id)
     geoNAME <- as.vector(chl$name)
     
@@ -76,24 +78,23 @@ server = function(input, output, session){
           color='#000000', opacity = 1, weight = 1.5, fillOpacity = 0.4,
           bringToFront = T, sendToBack = T))
   })
-  
   observe({ 
     click <- input$map_shape_click
     if(is.null(click))
       click$id <- "13101"
-    output$plot1 <- renderPlotly({
+   
+     output$plot1 <- renderPlotly({
       code <- click$id
       data <- muni_data %>% 
         filter(CODIGO==code) %>% 
         gather(VARIABLE,TOTAL,CASINO:MINERAS)
-      
       comuna <- unique(data$MUNICIPIO)
-      
       plot_ly(data, x = ~VARIABLE,y = ~TOTAL,type = 'bar',marker = list(color = brewer.pal(9,"Paired"))) %>% 
         layout(title =comuna,xaxis = list(title = "", tickangle = -45),
                yaxis = list(title = ""),
                margin = list(b = 100))
     })
+     
     output$povertyBox <- renderValueBox({
       code <- click$id
       data <- social_data %>% 
@@ -104,6 +105,7 @@ server = function(input, output, session){
         color = "red",width=NULL
       )
     })
+    
     output$fpsBox <- renderValueBox({
       code <- click$id
       data <- social_data %>% 
@@ -114,6 +116,7 @@ server = function(input, output, session){
         color = "green",width=NULL
       )
     })
+    
     output$subsidyBox <- renderValueBox({
       code <- click$id
       data <- social_data %>% 
@@ -124,12 +127,6 @@ server = function(input, output, session){
         color = "yellow",width=NULL
       )
     })
-    
-    text2<-paste("You've selected point ", click$id)
-    output$Click_text<-renderText({
-      text2
-    })
-    
   })
 }
 
